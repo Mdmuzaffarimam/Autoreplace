@@ -12,20 +12,28 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Database
-DB_PATH = os.getenv("DB_PATH", "replacements.db")
+import os
+import sqlite3
+
+DB_PATH = os.getenv("DB_PATH", "mongodb+srv://mohammadmuzaffarimambaturbari:sHXNxpKZ9PDjyYQr@cluster0.dqjjo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+
+# Make sure directory exists
+db_dir = os.path.dirname(DB_PATH)
+if db_dir and not os.path.exists(db_dir):
+    os.makedirs(db_dir, exist_ok=True)
+
+# Connect to DB
 conn = sqlite3.connect(DB_PATH, check_same_thread=False)
 cursor = conn.cursor()
-cursor.execute("""CREATE TABLE IF NOT EXISTS replacements (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    channel_id TEXT,
-                    old TEXT,
-                    new TEXT
-                )""")
-cursor.execute("""CREATE TABLE IF NOT EXISTS connections (
-                    user_id INTEGER,
-                    channel_id TEXT,
-                    PRIMARY KEY(user_id, channel_id)
-                )""")
+
+# Create table if not exists
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS replacements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    old TEXT NOT NULL,
+    new TEXT NOT NULL
+)
+""")
 conn.commit()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
